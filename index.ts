@@ -11,9 +11,21 @@ const RPC_URL=process.env.RPC_URL as string;
 
 const wallet = Keypair.fromSecretKey(bs58.decode(WALLET_PRIVATE_KEY));
 
-async function SplTokenSwap() {
+async function SplTokenSwap(tokenAddress: string) {
     const connection = new Connection(RPC_URL, "confirmed");
-
+    const tokenDecimals = getTokenDecimals(connection, tokenAddress);
 }
 
-console.log("hello");
+async function getTokenDecimals(connection: Connection, tokenAddress: string) {
+    const mintInfo = await connection.getParsedAccountInfo(new PublicKey(tokenAddress));
+
+    if (!mintInfo) {
+        throw new Error("Token account not found");
+    }
+
+    const decimals = (mintInfo.value?.data as any).parsed.info.decimals;
+    return decimals;
+}
+
+const TOKEN_ADDRESS = "4aR3jtFKWuYzkNE27WG4V7Jt6DDhwKcc2qjzN5Tkpump"
+SplTokenSwap(TOKEN_ADDRESS);
