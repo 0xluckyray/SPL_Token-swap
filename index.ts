@@ -1,16 +1,16 @@
-import { Connection, Keypair, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, NATIVE_MINT } from "@solana/spl-token";
 import bs58 from "bs58";
 import dotenv from "dotenv";
-import { BN } from "@project-serum/anchor";
-import { getSwapInfo } from "./jupiterService";
+import { Wallet, BN } from "@project-serum/anchor";
+import { getSwapInfo, getSwapTransaction } from "./jupiterService";
 
 dotenv.config();
 
 const WALLET_PRIVATE_KEY=process.env.WALLET_PRIVATE_KEY as string;
 const RPC_URL=process.env.RPC_URL as string;
 
-const wallet = Keypair.fromSecretKey(bs58.decode(WALLET_PRIVATE_KEY));
+const anchorWallet = new Wallet(Keypair.fromSecretKey(bs58.decode(WALLET_PRIVATE_KEY)));
 
 async function SplTokenSwap(tokenAddress: string, amount: number) {
     const connection = new Connection(RPC_URL, "confirmed");
@@ -18,8 +18,14 @@ async function SplTokenSwap(tokenAddress: string, amount: number) {
     const slippageBps = parseInt(process.env.SLIPPAGEBPS || "") || 50;
     
     const swapInfo = await getSwapInfo(NATIVE_MINT.toBase58(), tokenAddress, amount * LAMPORTS_PER_SOL, slippageBps);
-    
-    console.log("Swap Quote Info:", swapInfo);
+    const swapTransaction = await getSwapTransaction(swapInfo, anchorWallet);
+    const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
+    const latestBlockHash = await connection.getLatestBlockhash();
+    const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+    transaction.message.recentBlockhash = latestBlockHash.blockhash;
+    transaction.sign([anchorWallet.payer]);
+
+    console.log("Swap Quote Info:", transaction);
 }
 
 async function getTokenDecimals(connection: Connection, tokenAddress: string) {
