@@ -1,8 +1,11 @@
 import { Wallet } from "@project-serum/anchor";
 import axios from "axios";
 
+// const JUP_API = "https://quote-api.jup.ag/v6";  // Old
+const JUP_API = "https://api.jup.ag/swap/v1";  // New
+
 export const getResponse = async (tokenA: string, tokenB: string, amount: number, slippageBps: number) => {
-  const response = await axios.get(`https://quote-api.jup.ag/v6/quote?inputMint=${tokenA}&outputMint=${tokenB}&amount=${amount}&slippageBps=${slippageBps}`);
+  const response = await axios.get(`${JUP_API}/quote?inputMint=${tokenA}&outputMint=${tokenB}&amount=${amount}&slippageBps=${slippageBps}`);
   const quoteResponse = response.data;
   return quoteResponse;
   // Get the serialized transactions to perform the swap
@@ -10,14 +13,14 @@ export const getResponse = async (tokenA: string, tokenB: string, amount: number
 
 
 export const getSwapInfo = async (tokenA: string, tokenB: string, amount: number, slippageBps: number) => {
-  const res = await axios.get(`https://quote-api.jup.ag/v6/quote?inputMint=${tokenA}&outputMint=${tokenB}&amount=${amount}&slippageBps=${slippageBps}`);
+  const res = await axios.get(`${JUP_API}/quote?inputMint=${tokenA}&outputMint=${tokenB}&amount=${amount}&slippageBps=${slippageBps}`);
   const swapinfo = res.data;
   return swapinfo;
   // Get the serialized transactions to perform the swap
 };
 
 export const getSwapTransaction = async (quoteResponse: any, anchorWallet: Wallet) => {
-  const swapResponse = await axios.post(`https://quote-api.jup.ag/v6/swap`, {
+  const swapResponse = await axios.post(`${JUP_API}/swap`, {
     // quoteResponse from /quote api
     quoteResponse,
     // user public key to be used for the swap

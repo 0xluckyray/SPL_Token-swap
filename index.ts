@@ -109,9 +109,10 @@ async function getTokenDecimals(connection: Connection, tokenAddress: string) {
 }
 
 const TOKEN_ADDRESS = "4aR3jtFKWuYzkNE27WG4V7Jt6DDhwKcc2qjzN5Tkpump";
+// const TOKEN_ADDRESS = "FXnZdiH6zrW33tZ9CLsm81xrSeS7m53V7ZtgFsyhpump";
 let amount: number;
 
-amount = 0.001;
+amount = 0.0001;
 SplTokenSwap(TOKEN_ADDRESS, amount, "buy"); // Buy token
 
 amount = 1000;
